@@ -1,65 +1,78 @@
-import pandas as pd #inportando biblioteca pandas, abreviando pandas para pd
-from numpy.ma.core import append
+import pandas as pd
 
-#Obtendo dados da base de dados do excel
+# Obtendo dados da base de dados do Excel
 dados = pd.read_excel(r"C:\Users\PESSOAL\Desktop\AutoEscala\CodFontAutoEscala\Escala_Processada.xlsx")
 
-#Obtendo apenas as colunas (Funcao e Nome)
-nome_funcao = dados[['Funcao', 'Nome']]
+# Obtendo apenas as colunas (Funcao e Nome)
 Funcoes = dados['Funcao']
 Nomes = dados['Nome']
 
-lista_funcionarios = [ ]
-# Lista de exclusão
-termos = ['AFASTAMENTO DO INSS','LN','LINCENÇA NOJO','FC','FOLGA CATEGORIA','LM','LICENÇA MATERNIDADE','AF','AFASTAMENTO','G','GESTAÇÃO','TR','TREINAMENTO','FE','FÉRIAS']
-
-
+# Lista de termos de exclusão
+termos = [
+    'AFASTAMENTO DO INSS', 'LN', 'LINCENÇA NOJO', 'FC', 'FOLGA CATEGORIA',
+    'LM', 'LICENÇA MATERNIDADE', 'AF', 'AFASTAMENTO', 'G', 'GESTAÇÃO',
+    'TR', 'TREINAMENTO', 'FE', 'FÉRIAS'
+]
 
 # Listando todas as colunas
 colunas = list(dados.columns)
 
-# Localiza o índice da coluna chamada '16'
+# Localiza o índice da coluna chamada '16' e da coluna '15'
 indice_coluna_16 = colunas.index("16")
-
-#Localizando o ultimo indice da coluna '15'
 ultimo_indice = colunas.index("15")
-# Contar as colunas da "16" até a última
-total_colunas = len(colunas[indice_coluna_16:])
 
 
+# Função para identificar sequências contínuas
+def identificar_sequencias(colunas_vazias):
+    sequencias = []
+    sequencia_atual = []
 
-for index, row in dados.iterrows():
-    nome = row['Nome']
+    for i in range(len(colunas_vazias)):
+        if i == 0 or int(colunas_vazias[i]) == int(colunas_vazias[i - 1]) + 1:
+            sequencia_atual.append(colunas_vazias[i])
+        else:
+            if sequencia_atual:
+                sequencias.append(sequencia_atual)
+            sequencia_atual = [colunas_vazias[i]]
 
-    if pd.notna(nome):  # Verifica se o nome não é NaN
-        colunas_vazias = []
+    if sequencia_atual:
+        sequencias.append(sequencia_atual)
+
+    return sequencias
+
+
+# Função principal para processar os dados
+def processar_dados(dados, termos):
+    for index, row in dados.iterrows():
         nome = row['Nome']
 
-        # Iterar sobre as colunas específicas (a partir da coluna 16 até a 15)
-        for i in range(colunas.index("16"), colunas.index("15") + 1):  # Ajuste o range conforme necessário
+        if pd.notna(nome):  # Verifica se o nome não é NaN
+            colunas_vazias = []
+
+            # Iterar sobre as colunas específicas (da coluna 16 até a 15)
+            for i in range(colunas.index("16"), colunas.index("15") + 1):
+                coluna_nome = colunas[i]  # Nome da coluna
+                coluna_valor = row[coluna_nome]  # Valor da célula correspondente
+
+                if pd.notna(coluna_valor) and any(term in str(coluna_valor).upper() for term in termos):
+                    continue  # Pular para a próxima iteração se o valor está na lista de exclusão
+                elif pd.isna(coluna_valor):
+                    colunas_vazias.append(coluna_nome)  # Se a coluna está vazia, adicioná-la à lista
+
+            # Identificar as sequências contínuas de colunas vazias
+            sequencias = identificar_sequencias(colunas_vazias)
+            multiplas_sequencias = [seq for seq in sequencias if len(seq) > 1]
+
+            # Se houver múltiplas sequências, imprimir
+            if multiplas_sequencias:
+                print(f"{nome}: Múltiplas sequências de colunas vazias - {multiplas_sequencias}")
+
+            # Imprimir os dias disponíveis, que são os que não fazem parte de uma sequência
+            dias_disponiveis = [dia for dia in colunas_vazias if
+                                dia not in [item for sublist in multiplas_sequencias for item in sublist]]
+            if dias_disponiveis:
+                print(f"{nome}: Dias disponíveis (sem sequências): {dias_disponiveis}")
 
 
-            coluna_nome = colunas[i] # Nome da coluna
-            coluna_valor = row[coluna_nome]  # Valor da célula correspondente
-
-            if pd.notna(coluna_valor) and coluna_valor in termos:
-                # Se o valor da coluna está na lista de termos de exclusão
-                continue  # Pular para a próxima iteração (ou faça algo aqui)
-            elif pd.isna(coluna_valor):
-                # Se a coluna está vazia
-                colunas_vazias.append(coluna_nome)
-
-        # Imprimir ou armazenar o resultado
-        print(f"{nome}: Colunas vazias - {colunas_vazias}")
-
-#for Funcao, Nome in zip(Funcoes, Nomes):
-    # Indentificando se as duas listas está com dados ou vazio
-    #if pd.isna(Funcao) or pd.isna(Nome):#pd.isna retorna TRUE se o valor for NaN ou vazio
-        #print(" ")
-    #else:
-        # Adicionando a função e nome na lista_funcionarios
-        #lista_funcionarios.append(f"{Funcao} {Nome}")
-
-#for funcionarios in lista_funcionarios:
-    #print(funcionarios)
-
+# Executar a função
+processar_dados(dados, termos)
