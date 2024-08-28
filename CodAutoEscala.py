@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import urllib
 from selenium.common.exceptions import NoSuchElementException
 
 # Obtendo dados da base de dados do Excel
@@ -91,48 +92,6 @@ def processar_dados(dados, termos):
 
 # Executar a função
 processar_dados(dados, termos)
-
-print("\n Nomes disponiveis")
-for nome in (lista_nome):
-    print(nome)
-
-#Whatsapp
-driver = webdriver.Chrome()  #Drive do navegador
-
-driver.get("https://web.whatsapp.com/") # Acessando o whatsap
-
-time.sleep(15) # 20 Segundos para ler o Código QR
-
-def pesquisa_barra(browser, nome_grupo):
-    barra_pesquisa = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="side"]/div[1]/div/div[2]/div[2]/div/div/p')))
-    barra_pesquisa.click()
-
-    print("Cliquei no campo de busca de contato")
-    time.sleep(5)
-
-    barra_pesquisa.send_keys(nome_grupo)
-    print("Digitei")
-    time.sleep(6)
-
-
-    barra_pesquisa.send_keys(Keys.ENTER)
-    print("Apertei ENTER")
-    time.sleep(7)
-
-# Enviando mensagem
-
-def enviando_mensagem(browser, mensagem_grupo):
-    barra_mensagem = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p')))
-    barra_mensagem.click()
-
-    time.sleep(5)
-
-    barra_mensagem.send_keys(mensagem_grupo)
-    time.sleep(6)
-
-    barra_mensagem.send_keys(Keys.ENTER)
-    time.sleep(7)
-
 mensagem_cabecalho = """\Olá, pessoal! Sou um robô super simpático aqui para ajudar com a escala de folgas. Por favor, preencham o dia que desejam folgar, seguindo o exemplo abaixo:
 
 Exemplo: Juriscreide Nascimento Bezerra - dia 28
@@ -140,26 +99,99 @@ Exemplo: Juriscreide Nascimento Bezerra - dia 28
 Agora é a vez de vocês:
 """
 
+#Whatsapp
+driver = webdriver.Chrome()  #Drive do navegador
 
+def enviando_mensagem(browser, mensagem_link):
+
+    driver.get(f"https://web.whatsapp.com/send?phone={5511983352507}&text={mensagem_nova}") #Acessando whatsapp
+    time.sleep(15) # 20 Segundos para ler o Código QR
+
+
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button/span')))
+    enviando_msg_contato.click()
+
+    time.sleep(5)
+
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/header/div[3]/div/div[2]/div/div/span')))
+    enviando_msg_contato.click()
+
+    time.sleep(5)
+
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[2]/div')))
+    enviando_msg_contato.click()
+
+    time.sleep(10)
+    
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/div[3]/div/div[2]/div[3]/div[13]/div/div/span/div/div')))
+    enviando_msg_contato.click()
+
+    time.sleep(8)
+
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/span[2]/div/button[4]/span')))
+    enviando_msg_contato.click()
+
+    time.sleep(5)
+
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[2]/div/div/div/div/div/div/div/div[1]/div/div[2]/div[2]/div/div/p')))
+    enviando_msg_contato.click()
+
+
+    time.sleep(5)
+    #COLANDO O NOME
+    nome_grupo = "Grupo da Enfermagem"
+    enviando_msg_contato.send_keys(nome_grupo)
+    time.sleep(7)
+
+    #Selecionando o Grupo
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[2]/div/div/div/div/div/div/div/div[2]/div/div/div/div[2]/div/div[2]/div')))
+    enviando_msg_contato.click()
+
+    enviando_msg_contato = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[2]/div/div/div/div/div/div/div/span/div/div/div/span')))
+    enviando_msg_contato.click()
+
+    time.sleep(3)
+    #enviando_msg_contato.send_keys(Keys.ENTER)
+
+
+    #barra_pesquisa.send_keys(Keys.ENTER)
+
+
+# Enviando mensagem
+
+#Teste
+def construir_mensagem(cabecalho, nomes):
+    """Constrói a mensagem completa combinando o cabeçalho com a lista de nomes."""
+    mensagem = cabecalho
+    for nome in nomes:
+        mensagem += f"{nome}\n"  # Adiciona cada nome seguido por uma quebra de linha
+    return mensagem
+#Teste
+
+mensagem_nova = construir_mensagem(mensagem_cabecalho, lista_nome)
+
+print("Nomes pronto")
+time.sleep(5)
 # Combina o cabeçalho com a lista de nomes
-mensagem_completa = mensagem_cabecalho + "\n".join(lista_nome)
-
+mensagem_completa = str(mensagem_cabecalho) + str(lista_nome)
+mensagem_nova = urllib.parse.quote(mensagem_nova)
 # Cria um DataFrame com a mensagem completa, linha por linha
 df = pd.DataFrame({"Mensagem": [mensagem_completa]})
 
 # Salva o DataFrame em um arquivo Excel
 df.to_excel("mensagem_completa.xlsx", index=False)
+print("Mensagem salva com sucesso em 'mensagem_completa.xlsx'")
 
 # 2. Ler a mensagem do Excel
 df_lido = pd.read_excel("mensagem_completa.xlsx")
 mensagem_grupo = df_lido["Mensagem"].iloc[0]  # Pega o primeiro e único item
+print("Documento pronto")
+time.sleep(5)
+print(mensagem_grupo)
 
-print("Mensagem salva com sucesso em 'mensagem_completa.xlsx'")
-
-pesquisa_barra(driver, "Grupo da Enfermagem")
+enviando_mensagem(driver, mensagem_nova)
 
 
-enviando_mensagem(driver, mensagem_grupo)
 
 time.sleep(20)  # Aguarda 5 segundos para visualizar o resultado
 driver.quit()

@@ -1,15 +1,23 @@
-import pandas as pd
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-import time
+def enviando_mensagem(browser, mensagem_grupo):
+    print("Acessando o elemento")
+    time.sleep(15)
+    barra_mensagem = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p')))
 
-from testePro.testepro import driver
+    print("Clicando no elemento")
+    time.sleep(15)
+    barra_mensagem.click()
 
-driver = webdriver.Chrome()  #Drive do navegador
-
-driver.get("https://web.whatsapp.com/") # Acessando o whatsap
-
-while len(driver.find_element(By.XPATH, ' '))< 1:
+    time.sleep(10)
+    print('continuar...')
     input()
-    pass
+    print("Primeiro tempo")
+    barra_mensagem.send_keys(mensagem_nova)
+    time.sleep(10)
+
+    print("Segundo tempo")
+    barra_mensagem.send_keys(Keys.ENTER)
+    time.sleep(10)
+
+    # pesquisa_barra(driver, "Grupo da Enfermagem")
+
+    # enviando_mensagem(driver, mensagem_grupo)
